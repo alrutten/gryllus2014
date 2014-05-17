@@ -26,7 +26,7 @@ actogram = function(formula,
   if (!missing(groups)) dat$groups = dat[,groups] else dat$groups = 1
   transps = unique(dat$groups)
   
-  transps$act = 2*(length(transps):1)
+  transps= data.frame(groups = transps, act = 2*(length(transps):1))
   
   
   dat = merge(dat,transps,by='groups')
