@@ -43,7 +43,7 @@ actogram = function(formula,
   
     
   
-  p = ggplot(dat,aes(x=time,y=act)) +
+  p = ggplot(dat,aes(x=Time,y=act)) +
     geom_linerange(aes(ymin=ymin,ymax=ymax,group = groups,colour=groups)) +
     geom_vline(xintercept = c(0,24),lwd=0.6,col='black') +
     geom_rect(xmin=-10,xmax=-0.1,ymin=0,ymax = max(transps$act)+5,fill='white',colour='white') +
