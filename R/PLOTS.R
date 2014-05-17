@@ -39,8 +39,8 @@ actogram = function(formula,
   #right strip
   
   dates = unique(dat$day)
-  dates$time=dates$act = 12
-  dates$dateLab = format(strptime(dates$day,'%Y-%m-%d'),'%d %b')
+  dates=data.frame(day=dates,time = 12,act = 12,dateLab = format(strptime(dates,'%Y-%m-%d'),'%d %b'))
+  
     
   
   p = ggplot(dat,aes(x=time,y=act)) +
