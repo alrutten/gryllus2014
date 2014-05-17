@@ -8,7 +8,8 @@ actogram = function(formula,
   if(length(all.vars(formula)) !=2) stop("Formula must be of form: activity ~ time")
   x = deparse(formula[[3L]])         #datetime
   #y = deparse(formula[[2L]])         #activity
-  #fixme {
+  #fixme 
+  {
   dat$act = NULL
 }
   dat[, x] = as.POSIXct(dat[, x])
