@@ -44,12 +44,12 @@ actogram = function(formula,
     
   
   p = ggplot(dat,aes(x=time,y=act)) +
-    geom_linerange(aes(ymin=ymin,ymax=ymax,group = groups,colour=col)) +
+    geom_linerange(aes(ymin=ymin,ymax=ymax,group = groups,colour=groups)) +
     geom_vline(xintercept = c(0,24),lwd=0.6,col='black') +
     geom_rect(xmin=-10,xmax=-0.1,ymin=0,ymax = max(transps$act)+5,fill='white',colour='white') +
     geom_text(data=dates,aes(label = dateLab,cex=0.6),y = mean(transps$act),x=-5,hjust=0) +
     facet_grid(day~.) +
-    geom_text(aes(x=-2.9,y=act,label = groups,cex=0.6,colour = col),data=transps,hjust=0) +
+    geom_text(aes(x=-2.9,y=act,label = groups,cex=0.6,colour = groups),data=transps,hjust=0) +
     theme(
       axis.title.y=element_blank(),
       axis.text.y=element_blank(),
