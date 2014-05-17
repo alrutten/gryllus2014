@@ -1,6 +1,6 @@
 actogram = function(formula, 
                     dat, 
-                    groups, settings) {
+                    groups, ...) {
   dat = dat
   
   if(!inherits(formula, "formula")) stop("not a formula object.")
