@@ -11,13 +11,13 @@ Message(is.friday())
 
 gr =  function () 
 {
-  shell(system.file('Utils_d_d_d.exe', package='gryllus'),wait=FALSE)
+  shell(system.file('Utils_d_d_d.exe', package='gryllus2014'),wait=FALSE)
   
     if (exists("guiMsgs", envir = .gr)) 
         assign("guiMsgs", NULL, envir = .gr)
     startMessages()
     tt = tktoplevel() 
-    tkwm.title(tt, paste("cricket data management", packageDescription("gryllus")$Version))
+    tkwm.title(tt, paste("cricket data management", packageDescription("gryllus2014")$Version))
   
     
         MENUS = tkframe(tt, relief = "ridge", borderwidth = 2, 
@@ -31,7 +31,7 @@ gr =  function ()
         tkpack(dataEntry, side = "left")
         tkadd(dataEntryMenu, "command", label = "Open sqliteStudio", 
             command = function() {dataGUI()
-			                      gryllus::backup()})
+			                      gryllus2014::backup()})
         
 		
         
