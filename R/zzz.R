@@ -18,10 +18,10 @@
 	 }
     # load settings into dedicated environment
 	assign(".gr", new.env(), envir = .GlobalEnv )
-	sys.source( system.file("gr.settings.R", package = "gryllus"), envir = .gr)
+	sys.source( system.file("gr.settings.R", package = "gryllus2014"), envir = .gr)
 	sep = paste("\n", paste(rep("-", 61), collapse = ""), "\n", 
         collapse = "")
-	cat(paste(sep, "This is gryllus", packageDescription("gryllus")$Version, "\n\nType", sQuote("gr()"), 
+	cat(paste(sep, "This is gryllus", packageDescription("gryllus2014")$Version, "\n\nType", sQuote("gr()"), 
         "to start the graphical user interface \n", 
         sep))
 		
