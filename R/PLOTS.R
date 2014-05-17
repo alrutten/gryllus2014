@@ -1,9 +1,86 @@
+actogram = function(formula, 
+                    dat, 
+                    groups, settings) {
+  dat = dat
+  
+  if(!inherits(formula, "formula")) stop("not a formula object.")
+  
+  if(length(all.vars(formula)) !=2) stop("Formula must be of form: activity ~ time")
+  x = deparse(formula[[3L]])         #datetime
+  y = deparse(formula[[2L]])         #activity
+  
+  dat[, x] = as.POSIXct(dat[, x])
+  
+  dat$day  = as.Date(trunc(dat[, x] , "day") )
+  dat$Time = as.numeric(difftime(dat[, x], trunc(dat[, x], "day"), units = "hours"))
+  
+  #add missing days
+  days     = seq.Date(min(dat$day),max(dat$day),by='days')
+  dat      = merge(dat,data.frame(day = days),all=TRUE)
+  
+  
+  dat = dat[!is.na(dat$day),]
+  
+  
+  # make y-values
+  if (!missing(groups)) dat$groups = dat[,groups] else dat$groups = 1
+  transps = unique(dat$groups)
+  
+  transps$act = 2*(nrow(transps):1)
+  
+  
+  dat = merge(dat,transps,by='groups')
+  dat$ymin = dat$act-1
+  dat$ymax = dat$act+1
+  
+  #right strip
+  
+  dates = unique(dat$day)
+  dates$time=dates$act = 12
+  dates$dateLab = format(strptime(dates$day,'%Y-%m-%d'),'%d %b')
+    
+  
+  p = ggplot(dat,aes(x=time,y=act)) +
+    geom_linerange(aes(ymin=ymin,ymax=ymax,group = groups,colour=col)) +
+    geom_vline(xintercept = c(0,24),lwd=0.6,col='black') +
+    geom_rect(xmin=-10,xmax=-0.1,ymin=0,ymax = max(transps$act)+5,fill='white',colour='white') +
+    geom_text(data=dates,aes(label = dateLab,cex=0.6),y = mean(transps$act),x=-5,hjust=0) +
+    facet_grid(day~.) +
+    geom_text(aes(x=-2.9,y=act,label = groups,cex=0.6,colour = col),data=transps,hjust=0) +
+    theme(
+      axis.title.y=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      plot.background  = element_blank(),
+      panel.background = element_blank(),
+      panel.border = element_rect(colour = 'black',fill=NA),
+      axis.line.x = element_line(colour='black'),
+      axis.text.x = element_text(colour='black'),
+      panel.grid.major=element_line(colour = 'dark grey'),
+      panel.grid.minor=element_line(colour = 'light grey'),
+      strip.text = element_blank(),
+      legend.position = 'none',
+      strip.background = element_blank(),
+      plot.background = element_blank()
+      
+    ) +
+    scale_x_continuous(breaks = c(0:12)*2,limits = c(-4,23)) +
+    scale_y_continuous(breaks = transps$act-1,minor_breaks=NULL,limits = c(0,max(transps$act)+1)) +
+   # scale_colour_identity() + 
+  #  scale_fill_identity() +
+    labs(title = paste('box',unique(dat$box)))
+  
+  return(p)
+}
+
+
+
 # TODO; COG, circular mean, etc
 # TODO; day, night bar
 # TODO: avoid data doubling for doublePlot = TRUE 
 
 
-actogram <- function(formula, 
+actogram_old <- function(formula, 
 					dat, 
 					groups, 
 					strip.left.classes, 
@@ -154,7 +231,7 @@ visits_actogram_data = function ( lb = get("logger_path",
 {	
 # summarises transponder readings per minute
  
-  events    = sqliQuery(lb,paste("SELECT distinct burrow, datetime(round(CAST(strftime('%s.%f',datetime_)/60 as REAL)/1,0)*1*60,'unixepoch') as datetime_, transp from RFID
+  dat    = sqliQuery(lb,paste("SELECT distinct burrow, datetime(round(CAST(strftime('%s.%f',datetime_)/60 as REAL)/1,0)*1*60,'unixepoch') as datetime_, transp from RFID
 	                             where  datetime_>=",shQuote(startd),
 	                             " AND datetime_<=",shQuote(endd),
 								 " AND datetime_ IS NOT NULL",
@@ -162,15 +239,15 @@ visits_actogram_data = function ( lb = get("logger_path",
 								 " ORDER BY burrow,datetime_",sep=''))
   
 #  testtr = sql(con,"SELECT transponder from test_transponders")
-#  events$transp[events$transp%in%testtr$transp]= 'visit'
-#  events$transp[which(is.na(events$transp))] = ''
+#  dat$transp[dat$transp%in%testtr$transp]= 'visit'
+#  dat$transp[which(is.na(dat$transp))] = ''
   
-  events$datetime_ = as.POSIXct(events$datetime_)
-  events$day       = as.Date(trunc(events$datetime_, "day"))
-  events$time      = as.numeric(difftime(events$datetime_,trunc(events$datetime_,"day"),   #DO NOT USE events$day here!! (the time will be wrong)
+  dat$datetime_ = as.POSIXct(dat$datetime_)
+  #dat$day       = as.Date(trunc(dat$datetime_, "day"))
+  #dat$time      = as.numeric(difftime(dat$datetime_,trunc(dat$datetime_,"day"),   #DO NOT USE dat$day here!! (the time will be wrong)
                                          units = "hours"))  
- 
-  return(events)
+ dat$act = 10
+  return(dat)
   }
 
 actogram_plot = function(d, tf = tempfile(fileext='.pdf'), show = TRUE) {   
@@ -209,7 +286,7 @@ actogram_plot = function(d, tf = tempfile(fileext='.pdf'), show = TRUE) {
 	
 	OnOk=function(bx=tclvalue(boxsel),sdate = tclvalue(sdatesel),edate = tclvalue(edatesel)){
     
-	  actogram_plot(d = visits_actogram_data(burrow = as.numeric(bx),startd = sdate,endd = edate))
+	  actogram_plot(act~datetime_,dat = visits_actogram_data(burrow = as.numeric(bx),startd = sdate,endd = edate))
 	  
      }
 	  OK.but     = tkbutton(agw,text="MAKE ACTOGRAM",command = function() OnOk())
