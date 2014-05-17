@@ -1,6 +1,6 @@
 actogram = function(formula, 
                     dat, 
-                    groups, settings) {
+                    groups, ...) {
   dat = dat
   
   if(!inherits(formula, "formula")) stop("not a formula object.")
@@ -245,7 +245,7 @@ visits_actogram_data = function ( lb = get("logger_path",
   dat$datetime_ = as.POSIXct(dat$datetime_)
   #dat$day       = as.Date(trunc(dat$datetime_, "day"))
   #dat$time      = as.numeric(difftime(dat$datetime_,trunc(dat$datetime_,"day"),   #DO NOT USE dat$day here!! (the time will be wrong)
-                                         units = "hours"))  
+                                         #units = "hours"))  
  dat$act = 10
   return(dat)
   }
