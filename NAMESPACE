@@ -1,0 +1,2 @@
+import(plyr,tcltk,lattice)
+exportPattern("^[[:alpha:]]+")
