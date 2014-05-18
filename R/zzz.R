@@ -25,7 +25,7 @@
         "to start the graphical user interface \n", 
         sep))
 		
-		gr()
+	#	gr()
 
 
 } 

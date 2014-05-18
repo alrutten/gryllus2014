@@ -1,6 +1,6 @@
 
 #YEAR
-year = 2013									# year.
+year = 2014									# year.
 
 #PATHS (all without trailing /)
 database_path   =   "\\\\ds\\grpdingemanse\\CRICKETEERS\\Database\\gryllus.sqlite"   # where the database is
