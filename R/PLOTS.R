@@ -77,7 +77,7 @@ actogram = function(formula,
       plot.background = element_blank()
       
     ) +
-    scale_x_continuous(breaks = c(0:12)*2,limits = c(-4,23)) +
+    scale_x_continuous(breaks = c(0:12)*2,limits = c(-4,24)) +
     scale_y_continuous(breaks = c(0,transps$level*maxAct),minor_breaks=NULL,limits = c(0,max(transps$level)*maxAct)) 
  #  scale_colour_gradientn(colours = c('orange','blue'))
   # scale_colour_identity() + 
