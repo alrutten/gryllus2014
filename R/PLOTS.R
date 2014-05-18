@@ -5,13 +5,16 @@ actogram = function(formula,
   
   if(!inherits(formula, "formula")) stop("not a formula object.")
   
-  if(length(all.vars(formula)) !=2) stop("Formula must be of form: activity ~ time")
-  x = deparse(formula[[3L]])         #datetime
-  #y = deparse(formula[[2L]])         #activity
-  #fixme 
-  {
-  dat$act = NULL
-}
+  if(length(all.vars(formula)) >2) stop("Formula must be of form: activity ~ time")
+  if(length(all.vars(formula)) ==2) {  #formula act~datetime_
+    x = deparse(formula[[3L]])         #datetime
+    y = deparse(formula[[2L]])         #activity
+  } else {                             #formula ~datetime_
+    x = deparse(formula[[2L]])   
+    y=1
+  }
+
+  # split datetime_ in date and decimal time
   dat[, x] = as.POSIXct(dat[, x])
   
   dat$day  = as.Date(trunc(dat[, x] , "day") )
@@ -26,27 +29,34 @@ actogram = function(formula,
   
   
   # make y-values
+  dat$act = dat[,y]
+  
   if (!missing(groups)) dat$groups = dat[,groups] else dat$groups = 1
-  transps = unique(dat$groups)
   
-  transps= data.frame(groups = transps, act = 2*(length(transps):1))
+  #find levels
   
+  transps       = ddply(dat,.(groups),summarise,act = mean(act))
+  transps$level = nrow(transps):1
   
-  dat = merge(dat,transps,by='groups')
-  dat$ymin = dat$act-1
-  dat$ymax = dat$act+1
+  # find max act
+  maxAct = max(dat$act,na.rm=TRUE)
   
-  #right strip
+  dat = merge(dat,transps[,c('groups','level')],by='groups')
+  
+  dat$ymin = (dat$level-1)*maxAct
+  dat$ymax = dat$ymin + dat$act
+  
+  #left strip
   
   dates = unique(dat$day)
   dates=data.frame(day=dates,time = 12,act = 12,dateLab = format(strptime(dates,'%Y-%m-%d'),'%d %b'))
-  
+  transps$act = (transps$level-1)*maxAct+transps$act
     
   
   p = ggplot(dat,aes(x=Time,y=act)) +
     geom_linerange(aes(ymin=ymin,ymax=ymax,group = groups,colour=groups)) +
     geom_vline(xintercept = c(0,24),lwd=0.6,col='black') +
-    geom_rect(xmin=-10,xmax=-0.1,ymin=0,ymax = max(transps$act)+5,fill='white',colour='white') +
+    geom_rect(xmin=-10,xmax=-0.1,ymin=0,ymax = max(transps$level)*maxAct,fill='white',colour='white') +
     geom_text(data=dates,aes(label = dateLab,cex=0.6),y = mean(transps$act),x=-5,hjust=0) +
     facet_grid(day~.) +
     geom_text(aes(x=-2.9,y=act,label = groups,cex=0.6,colour = groups),data=transps,hjust=0) +
@@ -68,10 +78,10 @@ actogram = function(formula,
       
     ) +
     scale_x_continuous(breaks = c(0:12)*2,limits = c(-4,23)) +
-    scale_y_continuous(breaks = transps$act-1,minor_breaks=NULL,limits = c(0,max(transps$act)+1)) +
-   # scale_colour_identity() + 
-  #  scale_fill_identity() +
-    labs(title = paste('box',unique(dat$box)))
+    scale_y_continuous(breaks = c(0,transps$level*maxAct),minor_breaks=NULL,limits = c(0,max(transps$level)*maxAct)) 
+ #  scale_colour_gradientn(colours = c('orange','blue'))
+  # scale_colour_identity() + 
+  #  scale_fill_identity()
   
   return(p)
 }
