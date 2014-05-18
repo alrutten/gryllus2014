@@ -1,9 +1,11 @@
 devtools::install_github('alrutten/gryllus2014')
+
 require(gryllus2014)
 require(lattice)
 require(grid)
 require(plyr)
 require(ggplot2)
+
 options(stringsAsFactors=FALSE)
 
 datadir = 'D://crickets'
@@ -39,7 +41,10 @@ for ( i in 1:length(allburrows)) {
   fn = paste0(pngdir,"/",allburrows[i],"_",Sys.Date(),"_%03d.png")
   dd = d[which(d$burrow_id==allburrows[i]),]
   png(filename=fn)
-  p = actogram(act~datetime_, dat=dd, groups = 'tag', scale=1,layout = c(1,5), doublePlot = FALSE, main = paste0("bus,logger:",allburrows[i]))
+  #p = actogram(act~datetime_, dat=dd, groups = 'tag', scale=1,layout = c(1,5), doublePlot = FALSE, main = paste0("bus,logger:",allburrows[i]))
+  p =actogram(~datetime_,dat=dd,groups='tag') 
+  p =  p +
+    labs(title = paste('burrow',allburrows[i]))
   print(p)
   dev.off()
 }
@@ -74,6 +79,8 @@ allBus = unique(d$loggerID)
 dd = ddply(d,.(loggerID,datetime_,unit), summarise,act = length(tag))
 dd$logact = log(dd$act)
 dd$unit = paste('unit',dd$unit)
+
+plots = list()
 for ( i in 1:length(allBus)) {
   
   ddd = dd[which(dd$loggerID==allBus[i]),]
@@ -82,10 +89,18 @@ for ( i in 1:length(allBus)) {
   p =actogram(logact~datetime_,dat=ddd,groups='unit')
   p =  p +
     labs(title = paste('bus',allBus[i]))
-  
+  plots[[i]] = p
   print(p)
   
 }
 dev.off()
 shell.exec(pdfname)
 }
+
+# relation between number of readings per second and subsequent lag:
+d =d[order(d$loggerID,d$datetime_),]
+b = ddply(d,.(loggerID,datetime_), summarise,act = length(tag))
+b  = ddply(b,.(loggerID), mutate, 
+                                dt_nxt = c(datetime_[-1],datetime_[length(datetime_)]),
+                                lag = as.numeric(dt_nxt - datetime_))
+xyplot(lag~act,data=b,groups = loggerID)
